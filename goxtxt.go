@@ -165,7 +165,7 @@ func tweet(twtxtpath *string, s []string) {
 			buffer.WriteString(" ")
 		}
 	}
-	command := *twtxtpath + " tweet -f \"" + buffer.String() + "\""
+	command := *twtxtpath + " tweet \"" + buffer.String() + "\""
 
 	_, err := exec.Command(shell, "-c", command).Output()
 	if err != nil {
