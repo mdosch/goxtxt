@@ -30,6 +30,7 @@ func main() {
 		Twtxtpath       string
 		ControlJid      string
 		TimelineEntries int
+		MaxCharacters   int
 	}
 
 	var err error
@@ -104,6 +105,11 @@ func main() {
 						client.Send(reply.XMPPFormat())
 						break
 					}
+					if len(packet.Body)-3 > configuration.MaxCharacters {
+						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Tweet exceeds maximum of " + strconv.Itoa(configuration.MaxCharacters) + " characters."}
+						client.Send(reply.XMPPFormat())
+						break
+					}
 					tweet(&configuration.Twtxtpath, words[1:])
 					fallthrough
 				case "tl":
@@ -166,7 +172,6 @@ func tweet(twtxtpath *string, s []string) {
 		}
 	}
 	command := *twtxtpath + " tweet \"" + buffer.String() + "\""
-
 	_, err := exec.Command(shell, "-c", command).Output()
 	if err != nil {
 		log.Fatal(err)
@@ -190,7 +195,7 @@ func viewUser(twtxtpath *string, i *int, user *string) *string {
 		log.Fatal(err)
 	}
 	outputstring := string(out)
-        return &outputstring
+	return &outputstring
 }
 
 func userManagement(twtxtpath *string, follow bool, s []string) *string {
@@ -212,7 +217,7 @@ func userManagement(twtxtpath *string, follow bool, s []string) *string {
 		log.Fatal(err)
 	}
 	outputstring := string(out)
-        return &outputstring
+	return &outputstring
 }
 
 func listfollowing(twtxtpath *string) *string {
@@ -222,5 +227,5 @@ func listfollowing(twtxtpath *string) *string {
 		log.Fatal(err)
 	}
 	outputstring := string(out)
-        return &outputstring
+	return &outputstring
 }

@@ -4,5 +4,6 @@
     "Password": "ChangeThis!",
     "Twtxtpath": "/usr/local/bin/twtxt",
     "ControlJid": "user@example.com",
-    "TimelineEntries": 10
+    "TimelineEntries": 10,
+    "MaxCharacters": 140
 }
