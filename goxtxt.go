@@ -106,14 +106,16 @@ func main() {
 						break
 					}
 					if len(packet.Body)-3 > configuration.MaxCharacters {
-						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Tweet exceeds maximum of " + strconv.Itoa(configuration.MaxCharacters) + " characters."}
+						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Tweet exceeds maximum of " + 
+							strconv.Itoa(configuration.MaxCharacters) + " characters."}
 						client.Send(reply.XMPPFormat())
 						break
 					}
 					tweet(&configuration.Twtxtpath, words[1:])
 					fallthrough
 				case "tl":
-					reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *timeline(&configuration.Twtxtpath, &configuration.TimelineEntries)}
+					reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *timeline(&configuration.Twtxtpath, 
+						&configuration.TimelineEntries)}
 					client.Send(reply.XMPPFormat())
 				case "tv":
 					if len(words) == 1 {
@@ -126,7 +128,8 @@ func main() {
 						client.Send(reply.XMPPFormat())
 						break
 					}
-					reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *viewUser(&configuration.Twtxtpath, &configuration.TimelineEntries, &words[1])}
+					reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *viewUser(&configuration.Twtxtpath, 
+						&configuration.TimelineEntries, &words[1])}
 					client.Send(reply.XMPPFormat())
 				case "tf":
 					if len(words) != 3 {
