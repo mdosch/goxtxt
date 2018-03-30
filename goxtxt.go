@@ -1,10 +1,3 @@
-/*
-A bot to tweet with twtxt using xmpp. Created with try and error hacking on this example: https://github.com/processone/gox/blob/master/cmd/xmpp_echo/xmpp_echo.go
-This is the first programming I did since doing programming some µC in C and programming PLCs in my studies and I have to admit I didn't take the time to properly dive into programming.
-So consider this a studie to see how far you can get with some very basic knowledge, 'trial and error' and searching in the docs. Anyway recommendations how to do better are welcome.
-
-This file is licensed under "Apache License Version 2.0" like the original file I used as base. */
-
 package main
 
 import (
