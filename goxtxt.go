@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/processone/gox/xmpp"
@@ -59,7 +58,6 @@ func main() {
 	if _, err := os.Stat(shell); os.IsNotExist(err) {
 		log.Fatal("Error: ", err)
 	}
-
 	var client *xmpp.Client
 	if client, err = xmpp.NewClient(options); err != nil {
 		log.Fatal("Error: ", err)
@@ -73,6 +71,7 @@ func main() {
 	fmt.Println("Stream opened, we have streamID = ", session.StreamId)
 
 	var words []string
+
 	for packet := range client.Recv() {
 		switch packet := packet.(type) {
 		case *xmpp.ClientMessage:
@@ -81,13 +80,13 @@ func main() {
 				switch strings.ToLower(words[0]) {
 				case "help":
 					reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "\"help\": Show this message.\n" +
-						"\"ping\": Bot replies if available.\n" +
-						"\"tl\": Show last " + strconv.Itoa(configuration.TimelineEntries) + " timeline entries.\n" +
-						"\"tv [user]\": Show [user]s timeline.\n" +
-						"\"tw [tweet]\": Will tweet your input [tweet] and afterwards show your timeline.\n" +
-						"\"tf [user] [url]\": Follow [user].\n" +
-						"\"tu [user]\": Unfollow [user].\n" +
-						"\"to\": List the accounts you are following."}
+						"\"ping\":\t\t Bot replies if available.\n" +
+						"\"tl\":\t\t\t Show last " + strconv.Itoa(configuration.TimelineEntries) + " timeline entries.\n" +
+						"\"tv [user]\":\t Show [user]s timeline.\n" +
+						"\"tw [tweet]\":\t Will tweet your input [tweet] and afterwards show your timeline.\n" +
+						"\"tf [user] [url]\":Follow [user].\n" +
+						"\"tu [user]\":\t Unfollow [user].\n" +
+						"\"to\":\t\t\t List the accounts you are following."}
 					client.Send(reply.XMPPFormat())
 				case "ping":
 					reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Pong!"}
@@ -99,7 +98,7 @@ func main() {
 						break
 					}
 					if len(packet.Body)-3 > configuration.MaxCharacters {
-						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Tweet exceeds maximum of " + 
+						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Tweet exceeds maximum of " +
 							strconv.Itoa(configuration.MaxCharacters) + " characters."}
 						client.Send(reply.XMPPFormat())
 						break
@@ -107,7 +106,7 @@ func main() {
 					tweet(&configuration.Twtxtpath, words[1:])
 					fallthrough
 				case "tl":
-					reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *timeline(&configuration.Twtxtpath, 
+					reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *timeline(&configuration.Twtxtpath,
 						&configuration.TimelineEntries)}
 					client.Send(reply.XMPPFormat())
 				case "tv":
@@ -121,7 +120,7 @@ func main() {
 						client.Send(reply.XMPPFormat())
 						break
 					}
-					reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *viewUser(&configuration.Twtxtpath, 
+					reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *viewUser(&configuration.Twtxtpath,
 						&configuration.TimelineEntries, &words[1])}
 					client.Send(reply.XMPPFormat())
 				case "tf":
@@ -160,14 +159,14 @@ func main() {
 }
 
 func tweet(twtxtpath *string, s []string) {
-	var buffer bytes.Buffer
-	for i := 0; i < len(s); i++ {
-		buffer.WriteString(s[i])
+	command := *twtxtpath + " tweet \""
+	for i, tweet := range s {
+		command = command + tweet
 		if i < len(s)-1 {
-			buffer.WriteString(" ")
+			command = command + " "
 		}
 	}
-	command := *twtxtpath + " tweet \"" + buffer.String() + "\""
+	command = command + "\""
 	_, err := exec.Command(shell, "-c", command).Output()
 	if err != nil {
 		log.Fatal(err)
@@ -195,13 +194,6 @@ func viewUser(twtxtpath *string, i *int, user *string) *string {
 }
 
 func userManagement(twtxtpath *string, follow bool, s []string) *string {
-	/*        var buffer bytes.Buffer
-	          for i := 0; i < len(s); i++ {
-	                  buffer.WriteString(s[i])
-	                  if i < len(s)-1 {
-	                          buffer.WriteString(" ")
-	                  }
-	          } */
 	var command string
 	if follow == true {
 		command = *twtxtpath + " follow -f " + s[0] + " " + s[1]
