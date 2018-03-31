@@ -86,11 +86,15 @@ func main() {
 							" mentions. [user] will fall back  to \"" + configuration.Twtxtnick + "\" if not specified.\n" +
 							"\"tf [user] [url]\": Follow [user].\n" +
 							"\"tu [user]\": Unfollow [user].\n" +
-							"\"to\": List the accounts you are following."}
+							"\"to\": List the accounts you are following.\n" +
+							"\"source\": Shows a link to the sourcecode."}
 						client.Send(reply.XMPPFormat())
 					case "ping":
 						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Pong!"}
 						client.Send(reply.XMPPFormat())
+					case "source":
+                                                reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "https://github.com/mdosch/goxtxt/"}
+                                                client.Send(reply.XMPPFormat())
 					case "tw":
 						if len(words) == 1 {
 							reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "No Input."}
