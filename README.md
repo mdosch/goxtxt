@@ -7,7 +7,7 @@ This is the first programming I did since doing programming some µC in
 C and programming PLCs in my studies and I have to admit I didn't take 
 the time to properly dive into programming.
 
-So consider this a studie to see how far you can get with some very basic 
+So consider this a study to see how far you can get with some very basic 
 knowledge, 'trial and error' and searching in the docs. Anyway 
 recommendations how to do better are welcome.
 
