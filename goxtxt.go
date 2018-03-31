@@ -89,7 +89,7 @@ func main() {
 							"\"tv [user]\": Show [user]s timeline.\n" +
 							"\"tw [tweet]\": Will tweet your input [tweet] and afterwards show your timeline.\n" +
 							"\"tm [user]\": Will show the last " + strconv.Itoa(configuration.TimelineEntries) +
-							" entries. [user] will fall back  to \"" + configuration.Twtxtnick + "\" if not specified.\n" +
+							" mentions. [user] will fall back  to \"" + configuration.Twtxtnick + "\" if not specified.\n" +
 							"\"tf [user] [url]\": Follow [user].\n" +
 							"\"tu [user]\": Unfollow [user].\n" +
 							"\"to\": List the accounts you are following."}
