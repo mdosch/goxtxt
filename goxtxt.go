@@ -4,14 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/processone/gox/xmpp"
+	"goxtxt/twtxt"
 	"log"
 	"os"
-	"os/exec"
 	"strconv"
 	"strings"
 )
-
-var shell string
 
 func main() {
 
@@ -55,10 +53,6 @@ func main() {
 		log.Fatal("Error: ", err)
 	}
 
-	shell = os.Getenv("SHELL")
-	if _, err := os.Stat(shell); os.IsNotExist(err) {
-		log.Fatal("Error: ", err)
-	}
 	var client *xmpp.Client
 	if client, err = xmpp.NewClient(options); err != nil {
 		log.Fatal("Error: ", err)
@@ -109,10 +103,10 @@ func main() {
 							client.Send(reply.XMPPFormat())
 							break
 						}
-						tweet(&configuration.Twtxtpath, words[1:])
+						twtxt.Tweet(&configuration.Twtxtpath, words[1:])
 						fallthrough
 					case "tl":
-						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *timeline(&configuration.Twtxtpath,
+						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *twtxt.Timeline(&configuration.Twtxtpath,
 							&configuration.TimelineEntries)}
 						client.Send(reply.XMPPFormat())
 					case "tv":
@@ -126,17 +120,17 @@ func main() {
 							client.Send(reply.XMPPFormat())
 							break
 						}
-						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *viewUser(&configuration.Twtxtpath,
+						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *twtxt.ViewUser(&configuration.Twtxtpath,
 							&configuration.TimelineEntries, &words[1])}
 						client.Send(reply.XMPPFormat())
 					case "tm":
 						if len(words) == 1 {
-							reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *mentions(&configuration.Twtxtpath,
+							reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *twtxt.Mentions(&configuration.Twtxtpath,
 								&configuration.Twtxtnick, &configuration.TimelineEntries)}
 							client.Send(reply.XMPPFormat())
 						}
 						if len(words) == 2 {
-							reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *mentions(&configuration.Twtxtpath,
+							reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *twtxt.Mentions(&configuration.Twtxtpath,
 								&words[1], &configuration.TimelineEntries)}
 							client.Send(reply.XMPPFormat())
 						}
@@ -150,7 +144,7 @@ func main() {
 							client.Send(reply.XMPPFormat())
 							break
 						}
-						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *userManagement(&configuration.Twtxtpath, true, words[1:])}
+						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *twtxt.UserManagement(&configuration.Twtxtpath, true, words[1:])}
 						client.Send(reply.XMPPFormat())
 					case "tu":
 						if len(words) != 2 {
@@ -158,10 +152,10 @@ func main() {
 							client.Send(reply.XMPPFormat())
 							break
 						}
-						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *userManagement(&configuration.Twtxtpath, false, words[1:])}
+						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *twtxt.UserManagement(&configuration.Twtxtpath, false, words[1:])}
 						client.Send(reply.XMPPFormat())
 					case "to":
-						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *listfollowing(&configuration.Twtxtpath)}
+						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *twtxt.Listfollowing(&configuration.Twtxtpath)}
 						client.Send(reply.XMPPFormat())
 					default:
 						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Unknown command. Send \"help\"."}
@@ -179,75 +173,4 @@ func main() {
 		}
 		fmt.Fprintf(os.Stdout, "Reconnecting")
 	}
-}
-
-func tweet(twtxtpath *string, s []string) {
-	command := *twtxtpath + " tweet \""
-	for i, tweet := range s {
-		command = command + tweet
-		if i < len(s)-1 {
-			command = command + " "
-		}
-	}
-	command = command + "\""
-	_, err := exec.Command(shell, "-c", command).Output()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func timeline(twtxtpath *string, i *int) *string {
-	command := *twtxtpath + " timeline | head -n " + strconv.Itoa(*i*3)
-	out, err := exec.Command(shell, "-c", command).Output()
-	if err != nil {
-		log.Fatal(err)
-	}
-	outputstring := string(out)
-	return &outputstring
-}
-
-func viewUser(twtxtpath *string, i *int, user *string) *string {
-	command := *twtxtpath + " view " + *user + " | head -n " + strconv.Itoa(*i*3)
-	out, err := exec.Command(shell, "-c", command).Output()
-	if err != nil {
-		log.Fatal(err)
-	}
-	outputstring := string(out)
-	return &outputstring
-}
-
-func userManagement(twtxtpath *string, follow bool, s []string) *string {
-	var command string
-	if follow == true {
-		command = *twtxtpath + " follow -f " + s[0] + " " + s[1]
-	} else {
-		command = *twtxtpath + " unfollow " + s[0]
-	}
-	out, err := exec.Command(shell, "-c", command).Output()
-	if err != nil {
-		log.Fatal(err)
-	}
-	outputstring := string(out)
-	return &outputstring
-}
-
-func listfollowing(twtxtpath *string) *string {
-	command := *twtxtpath + " following"
-	out, err := exec.Command(shell, "-c", command).Output()
-	if err != nil {
-		log.Fatal(err)
-	}
-	outputstring := string(out)
-	return &outputstring
-}
-
-func mentions(twtxtpath *string, nick *string, number *int) *string {
-	command := *twtxtpath + " timeline | grep -B1 -m " + strconv.Itoa(*number) + " @" + *nick + " "
-	out, err := exec.Command(shell, "-c", command).Output()
-	if err != nil {
-		outputstring := "No mentions found."
-		return &outputstring
-	}
-	outputstring := string(out)
-	return &outputstring
 }
