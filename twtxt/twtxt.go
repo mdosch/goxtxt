@@ -9,6 +9,12 @@ import (
 
 var shell string = initshell()
 
+/* Needed as workaround as exec.Command fails when using e. g.
+"/usr/local/bin/twtxt" as comamnd and "timeline | head -n 30"
+as argument but works well when using "/bin/zsh" as command
+and passing "-c" and "/usr/local/bin/twtxt timeline | head -n 30"
+as argument works. */
+
 func initshell() string {
 	shell := os.Getenv("SHELL")
         if _, err := os.Stat(shell); os.IsNotExist(err) {
