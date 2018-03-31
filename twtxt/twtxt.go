@@ -13,7 +13,7 @@ var shell string = initshell()
 "/usr/local/bin/twtxt" as comamnd and "timeline | head -n 30"
 as argument but works well when using "/bin/zsh" as command
 and passing "-c" and "/usr/local/bin/twtxt timeline | head -n 30"
-as argument works. */
+as argument. */
 
 func initshell() string {
 	shell := os.Getenv("SHELL")
