@@ -64,97 +64,102 @@ func main() {
 	}
 
 	var session *xmpp.Session
-	if session, err = client.Connect(); err != nil {
-		log.Fatal("Error: ", err)
-	}
 
-	fmt.Println("Stream opened, we have streamID = ", session.StreamId)
+	for { // Will this loop be enough for reconnecting after connection loss?
 
-	var words []string
-
-	for packet := range client.Recv() {
-		switch packet := packet.(type) {
-		case *xmpp.ClientMessage:
-			if strings.HasPrefix(packet.From, configuration.ControlJid) {
-				words = strings.Fields(packet.Body)
-				switch strings.ToLower(words[0]) {
-				case "help":
-					reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "\"help\": Show this message.\n" +
-						"\"ping\":\t\t Bot replies if available.\n" +
-						"\"tl\":\t\t\t Show last " + strconv.Itoa(configuration.TimelineEntries) + " timeline entries.\n" +
-						"\"tv [user]\":\t Show [user]s timeline.\n" +
-						"\"tw [tweet]\":\t Will tweet your input [tweet] and afterwards show your timeline.\n" +
-						"\"tf [user] [url]\":Follow [user].\n" +
-						"\"tu [user]\":\t Unfollow [user].\n" +
-						"\"to\":\t\t\t List the accounts you are following."}
-					client.Send(reply.XMPPFormat())
-				case "ping":
-					reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Pong!"}
-					client.Send(reply.XMPPFormat())
-				case "tw":
-					if len(words) == 1 {
-						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "No Input."}
-						client.Send(reply.XMPPFormat())
-						break
-					}
-					if len(packet.Body)-3 > configuration.MaxCharacters {
-						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Tweet exceeds maximum of " +
-							strconv.Itoa(configuration.MaxCharacters) + " characters."}
-						client.Send(reply.XMPPFormat())
-						break
-					}
-					tweet(&configuration.Twtxtpath, words[1:])
-					fallthrough
-				case "tl":
-					reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *timeline(&configuration.Twtxtpath,
-						&configuration.TimelineEntries)}
-					client.Send(reply.XMPPFormat())
-				case "tv":
-					if len(words) == 1 {
-						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "No Input."}
-						client.Send(reply.XMPPFormat())
-						break
-					}
-					if len(words) > 2 {
-						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Timeline view supports only one user."}
-						client.Send(reply.XMPPFormat())
-						break
-					}
-					reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *viewUser(&configuration.Twtxtpath,
-						&configuration.TimelineEntries, &words[1])}
-					client.Send(reply.XMPPFormat())
-				case "tf":
-					if len(words) != 3 {
-						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Missing Input."}
-						client.Send(reply.XMPPFormat())
-						break
-					}
-					reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *userManagement(&configuration.Twtxtpath, true, words[1:])}
-					client.Send(reply.XMPPFormat())
-				case "tu":
-					if len(words) != 2 {
-						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Wrong parameter count."}
-						client.Send(reply.XMPPFormat())
-						break
-					}
-					reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *userManagement(&configuration.Twtxtpath, false, words[1:])}
-					client.Send(reply.XMPPFormat())
-				case "to":
-					reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *listfollowing(&configuration.Twtxtpath)}
-					client.Send(reply.XMPPFormat())
-				default:
-					reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Unknown command. Send \"help\"."}
-					client.Send(reply.XMPPFormat())
-				}
-			} else {
-				reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "You're not allowed to control me."}
-				client.Send(reply.XMPPFormat())
-				fmt.Fprintf(os.Stdout, "Body = %s - from = %s\n", packet.Body, packet.From)
-			}
-		default:
-			fmt.Fprintf(os.Stdout, "Ignoring packet: %T\n", packet)
-
+		if session, err = client.Connect(); err != nil {
+			log.Fatal("Error: ", err)
 		}
+
+		fmt.Println("Stream opened, we have streamID = ", session.StreamId)
+
+		var words []string
+
+		for packet := range client.Recv() {
+			switch packet := packet.(type) {
+			case *xmpp.ClientMessage:
+				if strings.HasPrefix(packet.From, configuration.ControlJid) {
+					words = strings.Fields(packet.Body)
+					switch strings.ToLower(words[0]) {
+					case "help":
+						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "\"help\": Show this message.\n" +
+							"\"ping\":\t\t Bot replies if available.\n" +
+							"\"tl\":\t\t\t Show last " + strconv.Itoa(configuration.TimelineEntries) + " timeline entries.\n" +
+							"\"tv [user]\":\t Show [user]s timeline.\n" +
+							"\"tw [tweet]\":\t Will tweet your input [tweet] and afterwards show your timeline.\n" +
+							"\"tf [user] [url]\":Follow [user].\n" +
+							"\"tu [user]\":\t Unfollow [user].\n" +
+							"\"to\":\t\t\t List the accounts you are following."}
+						client.Send(reply.XMPPFormat())
+					case "ping":
+						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Pong!"}
+						client.Send(reply.XMPPFormat())
+					case "tw":
+						if len(words) == 1 {
+							reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "No Input."}
+							client.Send(reply.XMPPFormat())
+							break
+						}
+						if len(packet.Body)-3 > configuration.MaxCharacters {
+							reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Tweet exceeds maximum of " +
+								strconv.Itoa(configuration.MaxCharacters) + " characters."}
+							client.Send(reply.XMPPFormat())
+							break
+						}
+						tweet(&configuration.Twtxtpath, words[1:])
+						fallthrough
+					case "tl":
+						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *timeline(&configuration.Twtxtpath,
+							&configuration.TimelineEntries)}
+						client.Send(reply.XMPPFormat())
+					case "tv":
+						if len(words) == 1 {
+							reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "No Input."}
+							client.Send(reply.XMPPFormat())
+							break
+						}
+						if len(words) > 2 {
+							reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Timeline view supports only one user."}
+							client.Send(reply.XMPPFormat())
+							break
+						}
+						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *viewUser(&configuration.Twtxtpath,
+							&configuration.TimelineEntries, &words[1])}
+						client.Send(reply.XMPPFormat())
+					case "tf":
+						if len(words) != 3 {
+							reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Missing Input."}
+							client.Send(reply.XMPPFormat())
+							break
+						}
+						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *userManagement(&configuration.Twtxtpath, true, words[1:])}
+						client.Send(reply.XMPPFormat())
+					case "tu":
+						if len(words) != 2 {
+							reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Wrong parameter count."}
+							client.Send(reply.XMPPFormat())
+							break
+						}
+						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *userManagement(&configuration.Twtxtpath, false, words[1:])}
+						client.Send(reply.XMPPFormat())
+					case "to":
+						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *listfollowing(&configuration.Twtxtpath)}
+						client.Send(reply.XMPPFormat())
+					default:
+						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Unknown command. Send \"help\"."}
+						client.Send(reply.XMPPFormat())
+					}
+				} else {
+					reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "You're not allowed to control me."}
+					client.Send(reply.XMPPFormat())
+					fmt.Fprintf(os.Stdout, "Body = %s - from = %s\n", packet.Body, packet.From)
+				}
+			default:
+				fmt.Fprintf(os.Stdout, "Ignoring packet: %T\n", packet)
+
+			}
+		}
+		fmt.Fprintf(os.Stdout, "Reconnecting")
 	}
 }
 
