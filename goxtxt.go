@@ -21,6 +21,7 @@ func main() {
 		Password        string
 		Twtxtpath       string
 		ControlJid      string
+		Twtxtnick       string
 		TimelineEntries int
 		MaxCharacters   int
 	}
@@ -83,13 +84,15 @@ func main() {
 					switch strings.ToLower(words[0]) {
 					case "help":
 						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "\"help\": Show this message.\n" +
-							"\"ping\":\t\t Bot replies if available.\n" +
-							"\"tl\":\t\t\t Show last " + strconv.Itoa(configuration.TimelineEntries) + " timeline entries.\n" +
-							"\"tv [user]\":\t Show [user]s timeline.\n" +
-							"\"tw [tweet]\":\t Will tweet your input [tweet] and afterwards show your timeline.\n" +
-							"\"tf [user] [url]\":Follow [user].\n" +
-							"\"tu [user]\":\t Unfollow [user].\n" +
-							"\"to\":\t\t\t List the accounts you are following."}
+							"\"ping\": Bot replies if available.\n" +
+							"\"tl\": Show last " + strconv.Itoa(configuration.TimelineEntries) + " timeline entries.\n" +
+							"\"tv [user]\": Show [user]s timeline.\n" +
+							"\"tw [tweet]\": Will tweet your input [tweet] and afterwards show your timeline.\n" +
+							"\"tm [user]\": Will show the last " + strconv.Itoa(configuration.TimelineEntries) +
+							" entries. [user] will fall back  to \"" + configuration.Twtxtnick + "\" if not specified.\n" +
+							"\"tf [user] [url]\": Follow [user].\n" +
+							"\"tu [user]\": Unfollow [user].\n" +
+							"\"to\": List the accounts you are following."}
 						client.Send(reply.XMPPFormat())
 					case "ping":
 						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Pong!"}
@@ -126,6 +129,21 @@ func main() {
 						reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *viewUser(&configuration.Twtxtpath,
 							&configuration.TimelineEntries, &words[1])}
 						client.Send(reply.XMPPFormat())
+					case "tm":
+						if len(words) == 1 {
+							reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *mentions(&configuration.Twtxtpath,
+								&configuration.Twtxtnick, &configuration.TimelineEntries)}
+							client.Send(reply.XMPPFormat())
+						}
+						if len(words) == 2 {
+							reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: *mentions(&configuration.Twtxtpath,
+								&words[1], &configuration.TimelineEntries)}
+							client.Send(reply.XMPPFormat())
+						}
+						if len(words) > 2 {
+							reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Too many arguments."}
+							client.Send(reply.XMPPFormat())
+						}
 					case "tf":
 						if len(words) != 3 {
 							reply := xmpp.ClientMessage{Packet: xmpp.Packet{To: packet.From}, Body: "Missing Input."}
@@ -218,6 +236,17 @@ func listfollowing(twtxtpath *string) *string {
 	out, err := exec.Command(shell, "-c", command).Output()
 	if err != nil {
 		log.Fatal(err)
+	}
+	outputstring := string(out)
+	return &outputstring
+}
+
+func mentions(twtxtpath *string, nick *string, number *int) *string {
+	command := *twtxtpath + " timeline | grep -B1 -m " + strconv.Itoa(*number) + " @" + *nick + " "
+	out, err := exec.Command(shell, "-c", command).Output()
+	if err != nil {
+		outputstring := "No mentions found."
+		return &outputstring
 	}
 	outputstring := string(out)
 	return &outputstring
