@@ -31,13 +31,13 @@ as argument. */
 
 func initshell() string {
 	shell := os.Getenv("SHELL")
-        if _, err := os.Stat(shell); os.IsNotExist(err) {
-                log.Fatal("Error: ", err)
-        }
+	if _, err := os.Stat(shell); os.IsNotExist(err) {
+		log.Fatal("Error: ", err)
+	}
 	return shell
 }
 
-func Tweet(twtxtpath *string, s []string) {
+func Tweet(twtxtpath *string, s []string) (*string, error) {
 	command := *twtxtpath + " tweet \""
 	for i, tweet := range s {
 		command = command + tweet
@@ -46,33 +46,26 @@ func Tweet(twtxtpath *string, s []string) {
 		}
 	}
 	command = command + "\""
-	_, err := exec.Command(shell, "-c", command).Output()
-	if err != nil {
-		log.Fatal(err)
-	} 
+	out, err := exec.Command(shell, "-c", command).Output()
+	outputstring := string(out)
+	return &outputstring, err
 }
 
-func Timeline(twtxtpath *string, i *int) *string {
+func Timeline(twtxtpath *string, i *int) (*string, error) {
 	command := *twtxtpath + " timeline | head -n " + strconv.Itoa(*i*3)
 	out, err := exec.Command(shell, "-c", command).Output()
-	if err != nil {
-		log.Fatal(err)
-	}
 	outputstring := string(out)
-	return &outputstring 
+	return &outputstring, err
 }
 
-func ViewUser(twtxtpath *string, i *int, user *string) *string {
+func ViewUser(twtxtpath *string, i *int, user *string) (*string, error) {
 	command := *twtxtpath + " view " + *user + " | head -n " + strconv.Itoa(*i*3)
 	out, err := exec.Command(shell, "-c", command).Output()
-	if err != nil {
-		log.Fatal(err)
-	}
 	outputstring := string(out)
-	return &outputstring
+	return &outputstring, err
 }
 
-func UserManagement(twtxtpath *string, follow bool, s []string) *string {
+func UserManagement(twtxtpath *string, follow bool, s []string) (*string, error) {
 	var command string
 	if follow == true {
 		command = *twtxtpath + " follow -f " + s[0] + " " + s[1]
@@ -80,30 +73,27 @@ func UserManagement(twtxtpath *string, follow bool, s []string) *string {
 		command = *twtxtpath + " unfollow " + s[0]
 	}
 	out, err := exec.Command(shell, "-c", command).Output()
-	if err != nil {
-		log.Fatal(err)
-	}
 	outputstring := string(out)
-	return &outputstring
+	return &outputstring, err
 }
 
-func Listfollowing(twtxtpath *string) *string {
+func Listfollowing(twtxtpath *string) (*string, error) {
 	command := *twtxtpath + " following"
 	out, err := exec.Command(shell, "-c", command).Output()
-	if err != nil {
-		log.Fatal(err)
-	}
 	outputstring := string(out)
-	return &outputstring
+	return &outputstring, err
 }
 
-func Mentions(twtxtpath *string, nick *string, number *int) *string {
-	command := *twtxtpath + " timeline | grep -B1 -m " + strconv.Itoa(*number) + " @" + *nick + " "
+func Mentions(twtxtpath *string, nick *string, number *int) (*string, error) {
+	command := *twtxtpath + " timeline | grep -iB1 -m " + strconv.Itoa(*number) + " \"@" + *nick + "\""
 	out, err := exec.Command(shell, "-c", command).Output()
-	if err != nil {
-		outputstring := "No mentions found."
-		return &outputstring
-	}
 	outputstring := string(out)
-	return &outputstring
+	return &outputstring, err
+}
+
+func Tags(twtxtpath *string, tag *string, number *int) (*string, error) {
+	command := *twtxtpath + " timeline | grep -iB1 -m " + strconv.Itoa(*number) + " \"#" + *tag + "\""
+	out, err := exec.Command(shell, "-c", command).Output()
+	outputstring := string(out)
+	return &outputstring, err
 }
