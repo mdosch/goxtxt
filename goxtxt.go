@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"fluux.io/xmpp"
 	"fmt"
-	"goxtxt/twtxt"
+	"github.com/mdosch/goxtxt/twtxt"
 	"log"
 	"os"
 	"strconv"
