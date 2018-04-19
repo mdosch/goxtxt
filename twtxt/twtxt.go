@@ -21,6 +21,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 )
 
 var shell string = initShell()
@@ -47,8 +48,9 @@ func initTwtxt() string {
 	if err != nil {
 		log.Fatal("Error: ",err)
 	}
-        outputstring := string(out)
-	return outputstring
+	output := strings.SplitAfter(string(out), " ")
+	output[1] = strings.TrimSuffix(output[1], "\n")
+	return output[1]
 }
 
 
