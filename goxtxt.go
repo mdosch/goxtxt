@@ -23,7 +23,10 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
+
+var lastActivity = time.Now()
 
 func main() {
 
@@ -82,11 +85,14 @@ func main() {
 
 	fmt.Println("Stream opened, we have streamID = ", session.StreamId)
 
+	go checkConnection(client, &configuration.BotJid, &configuration.Address)
+
 	var words []string
 
 	for packet := range client.Recv() {
 		switch packet := packet.(type) {
 		case xmpp.Message:
+			lastActivity = time.Now()
 			if strings.HasPrefix(packet.From, configuration.ControlJid) == false {
 				reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "You're not allowed to control me."}
 				client.Send(reply)
@@ -250,8 +256,25 @@ func main() {
 				reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Unknown command. Send \"help\"."}
 				client.Send(reply)
 			}
-		default:
+		case xmpp.StreamError:
 			fmt.Fprintf(os.Stdout, "Ignoring packet: %T\n", packet)
+		default:
+			lastActivity = time.Now()
 		}
 	}
 }
+
+func checkConnection(client *xmpp.Client, jid *string, server *string) {
+	for {
+		time.Sleep(1 * time.Minute)
+		timePassed := time.Since(lastActivity)
+		if int(timePassed.Minutes())  >= 5.0 {
+			ping := xmpp.NewIQ("get", *jid, *server, "twtxtbot", "en") 
+			client.Send(ping)
+		}
+		 if int(timePassed.Minutes())  >= 7.0 {
+			log.Fatal("Connection lost.")
+                }
+	}
+}
+ 
