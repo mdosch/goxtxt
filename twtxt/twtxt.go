@@ -91,7 +91,7 @@ func UserManagement(twtxtpath *string, follow bool, s []string) (*string, error)
 
 // ListFollowing lists the users you are following.
 // It returns a pointer to twtxt output and any error encountered.
-func Listfollowing(twtxtpath *string) (*string, error) {
+func ListFollowing(twtxtpath *string) (*string, error) {
 	command := *twtxtpath + " following"
 	out, err := exec.Command(shell, "-c", command).Output()
 	outputstring := string(out)

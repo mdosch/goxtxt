@@ -238,7 +238,7 @@ func main() {
 				reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: *out}
 				client.Send(reply)
 			case "to":
-				out, err := twtxt.Listfollowing(&configuration.Twtxtpath)
+				out, err := twtxt.ListFollowing(&configuration.Twtxtpath)
 				if err != nil {
 					reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed."}
 					client.Send(reply)
