@@ -141,7 +141,7 @@ func main() {
 			case "tl":
 				out, err := twtxt.Timeline(&configuration.TimelineEntries)
 				if err != nil {
-					reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed." + *out}
+					reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed."}
 					client.Send(reply)
 					break
 				}
@@ -160,7 +160,7 @@ func main() {
 				}
 				out, err := twtxt.ViewUser(&configuration.TimelineEntries, &words[1])
 				if err != nil {
-					reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed." + *out}
+					reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed."}
 					client.Send(reply)
 					break
 				}
@@ -170,7 +170,7 @@ func main() {
 				if len(words) == 1 {
 					out, err := twtxt.Mentions(&configuration.Twtxtnick, &configuration.TimelineEntries)
 					if err != nil {
-						reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed." + *out}
+						reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed."}
 						client.Send(reply)
 						break
 					}
@@ -180,7 +180,7 @@ func main() {
 				if len(words) == 2 {
 					out, err := twtxt.Mentions(&words[1], &configuration.TimelineEntries)
 					if err != nil {
-						reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed." + *out}
+						reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed."}
 						client.Send(reply)
 						break
 					}
@@ -199,7 +199,7 @@ func main() {
 				if len(words) == 2 {
 					out, err := twtxt.Tags(&words[1], &configuration.TimelineEntries)
 					if err != nil {
-						reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed." + *out}
+						reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed."}
 						client.Send(reply)
 						break
 					}
@@ -218,7 +218,7 @@ func main() {
 				}
 				out, err := twtxt.UserManagement(true, words[1:])
 				if err != nil {
-					reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed." + *out}
+					reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed."}
 					client.Send(reply)
 					break
 				}
@@ -232,7 +232,7 @@ func main() {
 				}
 				out, err := twtxt.UserManagement(false, words[1:])
 				if err != nil {
-					reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed." + *out}
+					reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed."}
 					client.Send(reply)
 					break
 				}
