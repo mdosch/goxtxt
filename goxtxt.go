@@ -34,7 +34,6 @@ func main() {
 		Address         string
 		BotJid          string
 		Password        string
-		Twtxtpath       string
 		ControlJid      string
 		Twtxtnick       string
 		TimelineEntries int
@@ -67,10 +66,6 @@ func main() {
 		Password: configuration.Password,
 		//		PacketLogger: os.Stdout,
 		Insecure: false}
-
-	if _, err := os.Stat(configuration.Twtxtpath); os.IsNotExist(err) {
-		log.Fatal("Error: ", err)
-	}
 
 	var client *xmpp.Client
 	if client, err = xmpp.NewClient(options); err != nil {
@@ -136,7 +131,7 @@ func main() {
 					client.Send(reply)
 					break
 				}
-				_, err := twtxt.Tweet(&configuration.Twtxtpath, words[1:])
+				_, err := twtxt.Tweet(words[1:])
 				if err != nil {
 					reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed."}
 					client.Send(reply)
@@ -144,7 +139,7 @@ func main() {
 				}
 				fallthrough
 			case "tl":
-				out, err := twtxt.Timeline(&configuration.Twtxtpath, &configuration.TimelineEntries)
+				out, err := twtxt.Timeline(&configuration.TimelineEntries)
 				if err != nil {
 					reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed." + *out}
 					client.Send(reply)
@@ -163,7 +158,7 @@ func main() {
 					client.Send(reply)
 					break
 				}
-				out, err := twtxt.ViewUser(&configuration.Twtxtpath, &configuration.TimelineEntries, &words[1])
+				out, err := twtxt.ViewUser(&configuration.TimelineEntries, &words[1])
 				if err != nil {
 					reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed." + *out}
 					client.Send(reply)
@@ -173,7 +168,7 @@ func main() {
 				client.Send(reply)
 			case "tm":
 				if len(words) == 1 {
-					out, err := twtxt.Mentions(&configuration.Twtxtpath, &configuration.Twtxtnick, &configuration.TimelineEntries)
+					out, err := twtxt.Mentions(&configuration.Twtxtnick, &configuration.TimelineEntries)
 					if err != nil {
 						reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed." + *out}
 						client.Send(reply)
@@ -183,7 +178,7 @@ func main() {
 					client.Send(reply)
 				}
 				if len(words) == 2 {
-					out, err := twtxt.Mentions(&configuration.Twtxtpath, &words[1], &configuration.TimelineEntries)
+					out, err := twtxt.Mentions(&words[1], &configuration.TimelineEntries)
 					if err != nil {
 						reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed." + *out}
 						client.Send(reply)
@@ -202,7 +197,7 @@ func main() {
 					client.Send(reply)
 				}
 				if len(words) == 2 {
-					out, err := twtxt.Tags(&configuration.Twtxtpath, &words[1], &configuration.TimelineEntries)
+					out, err := twtxt.Tags(&words[1], &configuration.TimelineEntries)
 					if err != nil {
 						reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed." + *out}
 						client.Send(reply)
@@ -221,7 +216,7 @@ func main() {
 					client.Send(reply)
 					break
 				}
-				out, err := twtxt.UserManagement(&configuration.Twtxtpath, true, words[1:])
+				out, err := twtxt.UserManagement(true, words[1:])
 				if err != nil {
 					reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed." + *out}
 					client.Send(reply)
@@ -235,7 +230,7 @@ func main() {
 					client.Send(reply)
 					break
 				}
-				out, err := twtxt.UserManagement(&configuration.Twtxtpath, false, words[1:])
+				out, err := twtxt.UserManagement(false, words[1:])
 				if err != nil {
 					reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed." + *out}
 					client.Send(reply)
@@ -244,7 +239,7 @@ func main() {
 				reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: *out}
 				client.Send(reply)
 			case "to":
-				out, err := twtxt.ListFollowing(&configuration.Twtxtpath)
+				out, err := twtxt.ListFollowing()
 				if err != nil {
 					reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Failed."}
 					client.Send(reply)

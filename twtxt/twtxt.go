@@ -24,6 +24,7 @@ import (
 )
 
 var shell string = initShell()
+var twtxtpath string = initTwtxt()
 
 /* Needed as workaround as exec.Command fails when using e. g.
 "/usr/local/bin/twtxt" as comamnd and "timeline | head -n 30"
@@ -39,10 +40,22 @@ func initShell() string {
 	return shell
 }
 
+// Gets the path to twtxt binary.
+func initTwtxt() string {
+	command := "whereis twtxt"
+        out, err := exec.Command(shell, "-c", command).Output()
+	if err != nil {
+		log.Fatal("Error: ",err)
+	}
+        outputstring := string(out)
+	return outputstring
+}
+
+
 // Tweet sends a tweet.
 // It returns a pointer to twtxt output and any error encountered.
-func Tweet(twtxtpath *string, s []string) (*string, error) {
-	command := *twtxtpath + " tweet \""
+func Tweet(s []string) (*string, error) {
+	command := twtxtpath + " tweet \""
 	for i, tweet := range s {
 		command = command + tweet
 		if i < len(s)-1 {
@@ -58,8 +71,8 @@ func Tweet(twtxtpath *string, s []string) (*string, error) {
 // Timeline shows the requested amount of timeline entries.
 // It returns a pointer to the requested timeline entries and any
 // error encountered.
-func Timeline(twtxtpath *string, i *int) (*string, error) {
-	command := *twtxtpath + " timeline | head -n " + strconv.Itoa(*i*3)
+func Timeline(i *int) (*string, error) {
+	command := twtxtpath + " timeline | head -n " + strconv.Itoa(*i*3)
 	out, err := exec.Command(shell, "-c", command).Output()
 	outputstring := string(out)
 	return &outputstring, err
@@ -69,20 +82,20 @@ func Timeline(twtxtpath *string, i *int) (*string, error) {
 // the specified user.
 // It returns a pointer to the requested timeline entries and any
 // error encountered.
-func ViewUser(twtxtpath *string, i *int, user *string) (*string, error) {
-	command := *twtxtpath + " view " + *user + " | head -n " + strconv.Itoa(*i*3)
+func ViewUser(i *int, user *string) (*string, error) {
+	command := twtxtpath + " view " + *user + " | head -n " + strconv.Itoa(*i*3)
 	out, err := exec.Command(shell, "-c", command).Output()
 	outputstring := string(out)
 	return &outputstring, err
 }
 // Usermanagement follows or unfollows the specified user.
 // It returns a pointer to twtxt output and any error encountered.
-func UserManagement(twtxtpath *string, follow bool, s []string) (*string, error) {
+func UserManagement(follow bool, s []string) (*string, error) {
 	var command string
 	if follow == true {
-		command = *twtxtpath + " follow -f " + s[0] + " " + s[1]
+		command = twtxtpath + " follow -f " + s[0] + " " + s[1]
 	} else {
-		command = *twtxtpath + " unfollow " + s[0]
+		command = twtxtpath + " unfollow " + s[0]
 	}
 	out, err := exec.Command(shell, "-c", command).Output()
 	outputstring := string(out)
@@ -91,8 +104,8 @@ func UserManagement(twtxtpath *string, follow bool, s []string) (*string, error)
 
 // ListFollowing lists the users you are following.
 // It returns a pointer to twtxt output and any error encountered.
-func ListFollowing(twtxtpath *string) (*string, error) {
-	command := *twtxtpath + " following"
+func ListFollowing() (*string, error) {
+	command := twtxtpath + " following"
 	out, err := exec.Command(shell, "-c", command).Output()
 	outputstring := string(out)
 	return &outputstring, err
@@ -101,8 +114,8 @@ func ListFollowing(twtxtpath *string) (*string, error) {
 // Mentions shows the requested amount of @-mentions for the specified user.
 // It returns a pointer to the requested timeline entries and any
 // error encountered.
-func Mentions(twtxtpath *string, nick *string, number *int) (*string, error) {
-	command := *twtxtpath + " timeline | grep -iB1 -m " + strconv.Itoa(*number) + " \"@" + *nick + "\""
+func Mentions(nick *string, number *int) (*string, error) {
+	command := twtxtpath + " timeline | grep -iB1 -m " + strconv.Itoa(*number) + " \"@" + *nick + "\""
 	out, err := exec.Command(shell, "-c", command).Output()
 	outputstring := string(out)
 	return &outputstring, err
@@ -111,8 +124,8 @@ func Mentions(twtxtpath *string, nick *string, number *int) (*string, error) {
 // Tags shows the requested amount of #-tags.
 // It returns a pointer to the requested timeline entries and any
 // error encountered.
-func Tags(twtxtpath *string, tag *string, number *int) (*string, error) {
-	command := *twtxtpath + " timeline | grep -iB1 -m " + strconv.Itoa(*number) + " \"#" + *tag + "\""
+func Tags(tag *string, number *int) (*string, error) {
+	command := twtxtpath + " timeline | grep -iB1 -m " + strconv.Itoa(*number) + " \"#" + *tag + "\""
 	out, err := exec.Command(shell, "-c", command).Output()
 	outputstring := string(out)
 	return &outputstring, err
