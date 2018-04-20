@@ -92,7 +92,7 @@ func Timeline(i *int) (*string, error) {
 func ViewUser(i *int, user *string) (*string, error) {
 	if txtnish == true {
 		command := twtxtpath + " timeline | grep -EiA1 " +
-			"-m " + strconv.Itoa(*i*3) + " '^\\* " + *user + " '"
+			"-m " + strconv.Itoa(*i) + " '^\\* " + *user + " '"
 		out, err := exec.Command(shell, "-c", command).Output()
 		outputstring := string(out)
 		return &outputstring, err 
