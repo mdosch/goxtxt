@@ -5,8 +5,8 @@ A xmpp twtxt bot written in go
 
 This bot enables you to tweet with [twtxt][2] by sending a message via [xmpp][3]. 
 Created with try and error hacking on [this example][1].
-This is the first programming I did since doing programming some µC in 
-C and programming PLCs in my studies and I have to admit I didn't take 
+This is the first programming I did since programming some µC in 
+C and programming PLCs during my studies and I have to admit I didn't take 
 the time to properly dive into programming.
 
 So consider this a study to see how far you can get with some very basic 
