@@ -25,7 +25,7 @@ import (
 )
 
 var shell string = initShell()
-var twtxtpath string = initTwtxt()
+var twtxtpath, txtnish = initTwtxt()
 
 /* Needed as workaround as exec.Command fails when using e. g.
 "/usr/local/bin/twtxt" as comamnd and "timeline | head -n 30"
@@ -41,16 +41,22 @@ func initShell() string {
 	return shell
 }
 
-// Gets the path to twtxt binary.
-func initTwtxt() string {
-	command := "whereis -b twtxt"
+// Gets the path to twtxt or txtnish binary. Txtnish is prefered.
+func initTwtxt() (string, bool) {
+	txtnishPresent := true
+	command := "whereis -b txtnish"
         out, err := exec.Command(shell, "-c", command).Output()
 	if err != nil {
-		log.Fatal("Error: ",err)
+		command = "whereis -b twtxt"
+        	out, err = exec.Command(shell, "-c", command).Output()
+		if err != nil {
+			log.Fatal("Error: ",err)
+		}
+		txtnishPresent = false
 	}
 	output := strings.SplitAfter(string(out), " ")
 	output[1] = strings.TrimSuffix(output[1], "\n")
-	return output[1]
+	return output[1], txtnishPresent
 }
 
 
@@ -85,6 +91,13 @@ func Timeline(i *int) (*string, error) {
 // It returns a pointer to the requested timeline entries and any
 // error encountered.
 func ViewUser(i *int, user *string) (*string, error) {
+	if txtnish == true {
+		command := twtxtpath + " timeline | grep -EiA1 " +
+			"-m " + strconv.Itoa(*i*3) + " '^\\* " + *user + " '"
+		out, err := exec.Command(shell, "-c", command).Output()
+		outputstring := string(out)
+		return &outputstring, err 
+	}
 	command := twtxtpath + " view " + *user + " | head -n " + strconv.Itoa(*i*3)
 	out, err := exec.Command(shell, "-c", command).Output()
 	outputstring := string(out)
