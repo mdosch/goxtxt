@@ -12,7 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License. */
 
-// Package twtxt provides an interface to a local installation 
+// Package twtxt provides an interface to a local installation
 // of the official twtxt client or txtnish.
 package twtxt
 
@@ -44,12 +44,12 @@ func initShell() string {
 func initTwtxt() (string, bool) {
 	txtnishPresent := true
 	command := "whereis -b txtnish"
-        out, err := exec.Command(shell, "-c", command).Output()
+	out, err := exec.Command(shell, "-c", command).Output()
 	if err != nil {
 		command = "whereis -b twtxt"
-        	out, err = exec.Command(shell, "-c", command).Output()
+		out, err = exec.Command(shell, "-c", command).Output()
 		if err != nil {
-			log.Fatal("Error: ",err)
+			log.Fatal("Error: ", err)
 		}
 		txtnishPresent = false
 	}
@@ -57,7 +57,6 @@ func initTwtxt() (string, bool) {
 	output[1] = strings.TrimSuffix(output[1], "\n")
 	return output[1], txtnishPresent
 }
-
 
 // Tweet sends a tweet.
 // It returns a pointer to twtxt output and any error encountered.
@@ -95,13 +94,14 @@ func ViewUser(i *int, user *string) (*string, error) {
 			"-m " + strconv.Itoa(*i) + " '^\\* " + *user + " '"
 		out, err := exec.Command(shell, "-c", command).Output()
 		outputstring := string(out)
-		return &outputstring, err 
+		return &outputstring, err
 	}
 	command := twtxtpath + " view " + *user + " | head -n " + strconv.Itoa(*i*3)
 	out, err := exec.Command(shell, "-c", command).Output()
 	outputstring := string(out)
 	return &outputstring, err
 }
+
 // Usermanagement follows or unfollows the specified user.
 // It returns a pointer to twtxt output and any error encountered.
 func UserManagement(follow bool, s []string) (*string, error) {

@@ -263,13 +263,12 @@ func checkConnection(client *xmpp.Client, jid *string, server *string) {
 	for {
 		time.Sleep(1 * time.Minute)
 		timePassed := time.Since(lastActivity)
-		if int(timePassed.Minutes())  >= 5.0 {
-			ping := xmpp.NewIQ("get", *jid, *server, "twtxtbot", "en") 
+		if int(timePassed.Minutes()) >= 5.0 {
+			ping := xmpp.NewIQ("get", *jid, *server, "twtxtbot", "en")
 			client.Send(ping)
 		}
-		 if int(timePassed.Minutes())  >= 7.0 {
+		if int(timePassed.Minutes()) >= 7.0 {
 			log.Fatal("Connection lost.")
-                }
+		}
 	}
 }
- 
