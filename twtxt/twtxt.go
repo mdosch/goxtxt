@@ -43,7 +43,7 @@ func initShell() string {
 
 // Gets the path to twtxt binary.
 func initTwtxt() string {
-	command := "whereis twtxt"
+	command := "whereis -b twtxt"
         out, err := exec.Command(shell, "-c", command).Output()
 	if err != nil {
 		log.Fatal("Error: ",err)
