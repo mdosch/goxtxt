@@ -47,6 +47,19 @@ The configuration is expected at `$HOME/.config/goxtxt/config.json` with this fo
     "MaxCharacters": 140
 }
 ```
+### twtxt
+
+As I am using `head` to get the last tweets you must configure `twtxt` to show
+tweets in descending order for now. I'll plan to make this configurable at 
+some point.
+
+### txtnish
+
+As I am using `head` to get the last tweets you must configure `twtxt` to show
+tweets in descending order for now. I'll plan to make this configurable at 
+some point.
+
+Also `use_color`  and `use_pager` must be set to `"0"`, `formatter` to `"cat"`.
 
 [1]:https://github.com/processone/gox/blob/master/cmd/xmpp_echo/xmpp_echo.go
 [2]:https://github.com/buckket/twtxt/
