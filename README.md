@@ -19,10 +19,11 @@ recommendations how to do better are welcome.
 * [twtxt client][5]
 * [coreutils][6]
 * [util-linux][7]
+* [grep][8]
 
 ## installation
 
-If you have *[GOPATH][8]* set just run this command:
+If you have *[GOPATH][9]* set just run this command:
 
 ```
 $ go install github.com/mdosch/goxtxt
@@ -53,4 +54,5 @@ The configuration is expected at `$HOME/.config/goxtxt/config.json` with this fo
 [5]:https://github.com/buckket/twtxt
 [6]:http://www.gnu.org/software/coreutils/coreutils.html
 [7]:https://git.kernel.org/pub/scm/utils/util-linux/util-linux.git/about/
-[8]:https://github.com/golang/go/wiki/SettingGOPATH
+[8]:http://www.gnu.org/software/grep/
+[9]:https://github.com/golang/go/wiki/SettingGOPATH
