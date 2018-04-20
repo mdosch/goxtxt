@@ -30,6 +30,22 @@ $ go install github.com/mdosch/goxtxt
 
 You will find the binary in `$GOPATH/bin` or, if set, `$GOBIN`.
 
+## configuration
+
+The configuration is expected at `$HOME/.config/goxtxt/config.json` with this format:
+
+```
+{
+    "Address": "example.com:5222",
+    "BotJid": "bot@example.com",
+    "Password": "ChangeThis!",
+    "ControlJid": "user@example.com",
+    "Twtxtnick": "mdosch",
+    "TimelineEntries": 10,
+    "MaxCharacters": 140
+}
+```
+
 [1]:https://github.com/processone/gox/blob/master/cmd/xmpp_echo/xmpp_echo.go
 [2]:https://github.com/buckket/twtxt/
 [3]:https://xmpp.org/
