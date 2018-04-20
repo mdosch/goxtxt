@@ -24,7 +24,7 @@ import (
 	"strings"
 )
 
-var shell string = initShell()
+var shell = initShell()
 var twtxtpath, txtnish = initTwtxt()
 
 // Needed as workaround as exec.Command fails when using e. g.
