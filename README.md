@@ -23,9 +23,10 @@ recommendations how to do better are welcome.
 
 ## installation
 
-If you have *[GOPATH][9]* set just run this command:
+If you have *[GOPATH][9]* set just run this commands:
 
 ```
+$ go get github.com/mdosch/goxtxt
 $ go install github.com/mdosch/goxtxt
 ```
 
