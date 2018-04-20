@@ -102,7 +102,7 @@ func ViewUser(i *int, user *string) (*string, error) {
 	return &outputstring, err
 }
 
-// Usermanagement follows or unfollows the specified user.
+// UserManagement follows or unfollows the specified user.
 // It returns a pointer to twtxt output and any error encountered.
 func UserManagement(follow bool, s []string) (*string, error) {
 	var command string
