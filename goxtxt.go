@@ -26,7 +26,9 @@ import (
 	"time"
 )
 
-type Configuration struct {
+// configuration is defined as global as it is needed by function
+// messageProcessing
+type configuration struct {
 	Address         string
 	BotJid          string
 	Password        string
@@ -36,6 +38,8 @@ type Configuration struct {
 	MaxCharacters   int
 }
 
+// lastActivity is defined as global as it is needed by functions
+// checkConnection and messageProcessing
 var lastActivity = time.Now()
 
 func main() {
@@ -55,15 +59,15 @@ func main() {
 	file, _ := os.Open(configpath + "config.json")
 	defer file.Close()
 	decoder := json.NewDecoder(file)
-	configuration := Configuration{}
-	if err := decoder.Decode(&configuration); err != nil {
+	config := configuration{}
+	if err := decoder.Decode(&config); err != nil {
 		log.Fatal("Error: ", err)
 	}
 
 	options := xmpp.Options{
-		Address:  configuration.Address,
-		Jid:      configuration.BotJid,
-		Password: configuration.Password,
+		Address:  config.Address,
+		Jid:      config.BotJid,
+		Password: config.Password,
 		//		PacketLogger: os.Stdout,
 		Insecure: false}
 
@@ -82,7 +86,7 @@ func main() {
 	fmt.Println("Stream opened, we have streamID = ", session.StreamId)
 
 	// Starting goroutine to check in background if connection is still alive.
-	go checkConnection(client, &configuration.BotJid, &configuration.Address)
+	go checkConnection(client, &config.BotJid, &config.Address)
 
 	// Receiving xmpp packets in a for loop
 	for packet := range client.Recv() {
@@ -90,7 +94,7 @@ func main() {
 		case xmpp.Message:
 			lastActivity = time.Now()
 			// Check if message comes from JID who is allowed to use this bot
-			if strings.HasPrefix(packet.From, configuration.ControlJid) == false {
+			if strings.HasPrefix(packet.From, config.ControlJid) == false {
 				reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 					Body: "You're not allowed to control me."}
 				client.Send(reply)
@@ -98,7 +102,7 @@ func main() {
 				break
 			}
 			// Process the message.
-			processMessage(client, &packet, &configuration)
+			processMessage(client, &packet, &config)
 		case xmpp.StreamError:
 			fmt.Fprintf(os.Stdout, "Ignoring packet: %T\n", packet)
 		default:
@@ -125,20 +129,20 @@ func checkConnection(client *xmpp.Client, jid *string, server *string) {
 	}
 }
 
-func processMessage(client *xmpp.Client, packet *xmpp.Message, configuration *Configuration) {
+func processMessage(client *xmpp.Client, packet *xmpp.Message, config *configuration) {
 	words := strings.Fields(packet.Body)
 	switch strings.ToLower(words[0]) {
 	case "help":
 		reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From,
 			Type: "chat"}, Body: "\"help\": Show this message.\n" +
 			"\"ping\": Bot replies if available.\n" +
-			"\"tl\": Show last " + strconv.Itoa(configuration.TimelineEntries) +
+			"\"tl\": Show last " + strconv.Itoa(config.TimelineEntries) +
 			" timeline entries.\n" +
 			"\"tv [user]\": Show [user]s timeline.\n" +
 			"\"tw [tweet]\": Will tweet your input [tweet] and afterwards show your timeline.\n" +
-			"\"tm [user]\": Will show the last " + strconv.Itoa(configuration.TimelineEntries) +
-			" mentions. [user] will fall back  to \"" + configuration.Twtxtnick + "\" if not specified.\n" +
-			"\"tt [tag]\": Will show the last " + strconv.Itoa(configuration.TimelineEntries) +
+			"\"tm [user]\": Will show the last " + strconv.Itoa(config.TimelineEntries) +
+			" mentions. [user] will fall back  to \"" + config.Twtxtnick + "\" if not specified.\n" +
+			"\"tt [tag]\": Will show the last " + strconv.Itoa(config.TimelineEntries) +
 			" occurrences of #[tag]\n" +
 			"\"tf [user] [url]\": Follow [user].\n" +
 			"\"tu [user]\": Unfollow [user].\n" +
@@ -160,10 +164,10 @@ func processMessage(client *xmpp.Client, packet *xmpp.Message, configuration *Co
 			client.Send(reply)
 			break
 		}
-		if len(packet.Body)-3 > configuration.MaxCharacters {
+		if len(packet.Body)-3 > config.MaxCharacters {
 			reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 				Body: "Tweet exceeds maximum of " +
-					strconv.Itoa(configuration.MaxCharacters) + " characters."}
+					strconv.Itoa(config.MaxCharacters) + " characters."}
 			client.Send(reply)
 			break
 		}
@@ -176,7 +180,7 @@ func processMessage(client *xmpp.Client, packet *xmpp.Message, configuration *Co
 		}
 		fallthrough
 	case "tl":
-		out, err := twtxt.Timeline(&configuration.TimelineEntries)
+		out, err := twtxt.Timeline(&config.TimelineEntries)
 		if err != nil {
 			reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 				Body: "Failed."}
@@ -199,7 +203,7 @@ func processMessage(client *xmpp.Client, packet *xmpp.Message, configuration *Co
 			client.Send(reply)
 			break
 		}
-		out, err := twtxt.ViewUser(&configuration.TimelineEntries, &words[1])
+		out, err := twtxt.ViewUser(&config.TimelineEntries, &words[1])
 		if err != nil {
 			reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 				Body: "Failed."}
@@ -211,7 +215,7 @@ func processMessage(client *xmpp.Client, packet *xmpp.Message, configuration *Co
 		client.Send(reply)
 	case "tm":
 		if len(words) == 1 {
-			out, err := twtxt.Mentions(&configuration.Twtxtnick, &configuration.TimelineEntries)
+			out, err := twtxt.Mentions(&config.Twtxtnick, &config.TimelineEntries)
 			if err != nil {
 				reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 					Body: "Failed."}
@@ -223,7 +227,7 @@ func processMessage(client *xmpp.Client, packet *xmpp.Message, configuration *Co
 			client.Send(reply)
 		}
 		if len(words) == 2 {
-			out, err := twtxt.Mentions(&words[1], &configuration.TimelineEntries)
+			out, err := twtxt.Mentions(&words[1], &config.TimelineEntries)
 			if err != nil {
 				reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 					Body: "Failed."}
@@ -246,7 +250,7 @@ func processMessage(client *xmpp.Client, packet *xmpp.Message, configuration *Co
 			client.Send(reply)
 		}
 		if len(words) == 2 {
-			out, err := twtxt.Tags(&words[1], &configuration.TimelineEntries)
+			out, err := twtxt.Tags(&words[1], &config.TimelineEntries)
 			if err != nil {
 				reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 					Body: "Failed."}
