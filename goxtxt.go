@@ -74,16 +74,19 @@ func main() {
 
 	var session *xmpp.Session
 
+	// Connecting to xmpp server
 	if session, err = client.Connect(); err != nil {
 		log.Fatal("Error: ", err)
 	}
 
 	fmt.Println("Stream opened, we have streamID = ", session.StreamId)
 
+	// Starting goroutine to check in background if connection is still alive.
 	go checkConnection(client, &configuration.BotJid, &configuration.Address)
 
 	var words []string
 
+	// Receiving xmpp packets in a for loop
 	for packet := range client.Recv() {
 		switch packet := packet.(type) {
 		case xmpp.Message:
@@ -259,6 +262,10 @@ func main() {
 	}
 }
 
+// checkConnection checks every minute if there has been activity within
+// the last 5 minutes and sends a ping if not.
+// If there was still no activity after 2 more minutes the program
+// will end with an error.
 func checkConnection(client *xmpp.Client, jid *string, server *string) {
 	for {
 		time.Sleep(1 * time.Minute)
