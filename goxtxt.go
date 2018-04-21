@@ -26,10 +26,6 @@ import (
 	"time"
 )
 
-var lastActivity = time.Now()
-
-func main() {
-
 	type Configuration struct {
 		Address         string
 		BotJid          string
@@ -39,6 +35,10 @@ func main() {
 		TimelineEntries int
 		MaxCharacters   int
 	}
+
+var lastActivity = time.Now()
+
+func main() {
 
 	var err error
 	configpath := os.Getenv("HOME") + "/.config/goxtxt/"
@@ -84,20 +84,48 @@ func main() {
 	// Starting goroutine to check in background if connection is still alive.
 	go checkConnection(client, &configuration.BotJid, &configuration.Address)
 
-	var words []string
-
 	// Receiving xmpp packets in a for loop
 	for packet := range client.Recv() {
 		switch packet := packet.(type) {
 		case xmpp.Message:
 			lastActivity = time.Now()
+			// Check if message comes from JID who is allowed to use this bot
 			if strings.HasPrefix(packet.From, configuration.ControlJid) == false {
 				reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "You're not allowed to control me."}
 				client.Send(reply)
 				fmt.Fprintf(os.Stdout, "Body = %s - from = %s\n", packet.Body, packet.From)
 				break
 			}
-			words = strings.Fields(packet.Body)
+			// Process the message.
+			processMessage(client, &packet, &configuration)
+		case xmpp.StreamError:
+			fmt.Fprintf(os.Stdout, "Ignoring packet: %T\n", packet)
+		default:
+			lastActivity = time.Now()
+		}
+	}
+}
+
+// checkConnection checks every minute if there has been activity within
+// the last 5 minutes and sends a ping if not.
+// If there was still no activity after 2 more minutes the program
+// will end with an error.
+func checkConnection(client *xmpp.Client, jid *string, server *string) {
+	for {
+		time.Sleep(1 * time.Minute)
+		timePassed := time.Since(lastActivity)
+		if int(timePassed.Minutes()) >= 5.0 {
+			ping := xmpp.NewIQ("get", *jid, *server, "twtxtbot", "en")
+			client.Send(ping)
+		}
+		if int(timePassed.Minutes()) >= 7.0 {
+			log.Fatal("Connection lost.")
+		}
+	}
+}
+
+func processMessage(client *xmpp.Client, packet *xmpp.Message, configuration *Configuration) {
+			words := strings.Fields(packet.Body)
 			switch strings.ToLower(words[0]) {
 			case "help":
 				reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From,
@@ -254,28 +282,4 @@ func main() {
 				reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"}, Body: "Unknown command. Send \"help\"."}
 				client.Send(reply)
 			}
-		case xmpp.StreamError:
-			fmt.Fprintf(os.Stdout, "Ignoring packet: %T\n", packet)
-		default:
-			lastActivity = time.Now()
-		}
-	}
-}
-
-// checkConnection checks every minute if there has been activity within
-// the last 5 minutes and sends a ping if not.
-// If there was still no activity after 2 more minutes the program
-// will end with an error.
-func checkConnection(client *xmpp.Client, jid *string, server *string) {
-	for {
-		time.Sleep(1 * time.Minute)
-		timePassed := time.Since(lastActivity)
-		if int(timePassed.Minutes()) >= 5.0 {
-			ping := xmpp.NewIQ("get", *jid, *server, "twtxtbot", "en")
-			client.Send(ping)
-		}
-		if int(timePassed.Minutes()) >= 7.0 {
-			log.Fatal("Connection lost.")
-		}
-	}
 }
