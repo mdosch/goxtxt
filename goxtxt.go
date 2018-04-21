@@ -129,6 +129,8 @@ func checkConnection(client *xmpp.Client, jid *string, server *string) {
 	}
 }
 
+// processMessage is executing the twtxt commands according to messages
+// received and replies the output.
 func processMessage(client *xmpp.Client, packet *xmpp.Message, config *configuration) {
 	words := strings.Fields(packet.Body)
 	switch strings.ToLower(words[0]) {
