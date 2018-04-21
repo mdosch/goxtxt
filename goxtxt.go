@@ -166,10 +166,12 @@ func processMessage(client *xmpp.Client, packet *xmpp.Message, config *configura
 			client.Send(reply)
 			break
 		}
-		if len(packet.Body)-3 > config.MaxCharacters {
+		tweetLength := len(packet.Body) - 3
+		if tweetLength > config.MaxCharacters {
 			reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
-				Body: "Tweet exceeds maximum of " +
-					strconv.Itoa(config.MaxCharacters) + " characters."}
+				Body: "Tweet exceeds maximum of " + strconv.Itoa(config.MaxCharacters) +
+					" characters by " + strconv.Itoa(tweetLength-config.MaxCharacters) +
+					" characters."}
 			client.Send(reply)
 			break
 		}
