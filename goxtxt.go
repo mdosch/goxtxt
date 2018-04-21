@@ -27,7 +27,7 @@ import (
 )
 
 // configuration is defined as global as it is needed by function
-// messageProcessing
+// messageProcessing.
 type configuration struct {
 	Address         string
 	BotJid          string
@@ -39,12 +39,14 @@ type configuration struct {
 }
 
 // lastActivity is defined as global as it is needed by functions
-// checkConnection and messageProcessing
+// checkConnection and messageProcessing.
 var lastActivity = time.Now()
 
 func main() {
 
 	var err error
+
+	// Create configpath if not yet existing.
 	configpath := os.Getenv("HOME") + "/.config/goxtxt/"
 	if _, err := os.Stat(configpath + "config.json"); os.IsNotExist(err) {
 		err = os.MkdirAll(configpath, 0700)
@@ -52,10 +54,13 @@ func main() {
 			log.Fatal("Error: ", err)
 		}
 	}
+
+	// Check that config file is existing.
 	if _, err := os.Stat(configpath + "config.json"); os.IsNotExist(err) {
 		log.Fatal("Error: ", err)
 	}
 
+	// Read configuration file into variable config.
 	file, _ := os.Open(configpath + "config.json")
 	defer file.Close()
 	decoder := json.NewDecoder(file)
@@ -64,6 +69,7 @@ func main() {
 		log.Fatal("Error: ", err)
 	}
 
+	// Set xmpp connection options according the config.
 	options := xmpp.Options{
 		Address:  config.Address,
 		Jid:      config.BotJid,
@@ -78,7 +84,7 @@ func main() {
 
 	var session *xmpp.Session
 
-	// Connecting to xmpp server
+	// Connect to xmpp server
 	if session, err = client.Connect(); err != nil {
 		log.Fatal("Error: ", err)
 	}
@@ -133,7 +139,9 @@ func checkConnection(client *xmpp.Client, jid *string, server *string) {
 // received and replies the output.
 func processMessage(client *xmpp.Client, packet *xmpp.Message, config *configuration) {
 	words := strings.Fields(packet.Body)
+	// First word of message body contains the command.
 	switch strings.ToLower(words[0]) {
+	// Show help message.
 	case "help":
 		reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From,
 			Type: "chat"}, Body: "\"help\": Show this message.\n" +
@@ -151,21 +159,26 @@ func processMessage(client *xmpp.Client, packet *xmpp.Message, config *configura
 			"\"to\": List the accounts you are following.\n" +
 			"\"source\": Shows a link to the sourcecode."}
 		client.Send(reply)
+	// Reply to a ping request.
 	case "ping":
 		reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 			Body: "Pong!"}
 		client.Send(reply)
+	// Show link to source code repository.
 	case "source":
 		reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 			Body: "https://github.com/mdosch/goxtxt/"}
 		client.Send(reply)
+	// Send a tweet.
 	case "tw":
+		// Check that message body contains something to tweet.
 		if len(words) == 1 {
 			reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 				Body: "No Input."}
 			client.Send(reply)
 			break
 		}
+		// Check that tweet doesn't exceed configured maximum length.
 		tweetLength := len(packet.Body) - 3
 		if tweetLength > config.MaxCharacters {
 			reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
@@ -175,6 +188,7 @@ func processMessage(client *xmpp.Client, packet *xmpp.Message, config *configura
 			client.Send(reply)
 			break
 		}
+		// Send the tweet.
 		_, err := twtxt.Tweet(words[1:])
 		if err != nil {
 			reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
@@ -182,7 +196,9 @@ func processMessage(client *xmpp.Client, packet *xmpp.Message, config *configura
 			client.Send(reply)
 			break
 		}
+		// Automatically show updated timeline after successful tweeting.
 		fallthrough
+	// Show timeline.
 	case "tl":
 		out, err := twtxt.Timeline(&config.TimelineEntries)
 		if err != nil {
@@ -194,13 +210,16 @@ func processMessage(client *xmpp.Client, packet *xmpp.Message, config *configura
 		reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 			Body: *out}
 		client.Send(reply)
+	// Show only timeline entries from a certain user.
 	case "tv":
+		// Check there is a username specified.
 		if len(words) == 1 {
 			reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 				Body: "No Input."}
 			client.Send(reply)
 			break
 		}
+		// Check there is not more than one username specified.
 		if len(words) > 2 {
 			reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 				Body: "Timeline view supports only one user."}
@@ -217,7 +236,9 @@ func processMessage(client *xmpp.Client, packet *xmpp.Message, config *configura
 		reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 			Body: *out}
 		client.Send(reply)
+	// Show @-mentions of a certain user.
 	case "tm":
+		// If no username specified show mentions of own user.
 		if len(words) == 1 {
 			out, err := twtxt.Mentions(&config.Twtxtnick, &config.TimelineEntries)
 			if err != nil {
@@ -230,6 +251,7 @@ func processMessage(client *xmpp.Client, packet *xmpp.Message, config *configura
 				Body: *out}
 			client.Send(reply)
 		}
+		// Show mentions of the specified user.
 		if len(words) == 2 {
 			out, err := twtxt.Mentions(&words[1], &config.TimelineEntries)
 			if err != nil {
@@ -242,17 +264,21 @@ func processMessage(client *xmpp.Client, packet *xmpp.Message, config *configura
 				Body: *out}
 			client.Send(reply)
 		}
+		// Check that there is not more than one user specified.
 		if len(words) > 2 {
 			reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 				Body: "Too many arguments."}
 			client.Send(reply)
 		}
+	// Show timeline entries containing a certain #-tag.
 	case "tt":
+		// Check that a tag is specified.
 		if len(words) == 1 {
 			reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 				Body: "Missing Input."}
 			client.Send(reply)
 		}
+		// Show timeline entries for the specified tag.
 		if len(words) == 2 {
 			out, err := twtxt.Tags(&words[1], &config.TimelineEntries)
 			if err != nil {
@@ -265,18 +291,22 @@ func processMessage(client *xmpp.Client, packet *xmpp.Message, config *configura
 				Body: *out}
 			client.Send(reply)
 		}
+		// Check that there is only one tag specified.
 		if len(words) > 2 {
 			reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 				Body: "Too many arguments."}
 			client.Send(reply)
 		}
+	// Add a certain user to follow.
 	case "tf":
+		// Check that username and URL are specified.
 		if len(words) != 3 {
 			reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 				Body: "Missing Input."}
 			client.Send(reply)
 			break
 		}
+		// Follow the specified user.
 		out, err := twtxt.UserManagement(true, words[1:])
 		if err != nil {
 			reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
@@ -287,13 +317,16 @@ func processMessage(client *xmpp.Client, packet *xmpp.Message, config *configura
 		reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 			Body: *out}
 		client.Send(reply)
+	// Stop following a certain user.
 	case "tu":
+		// Check that only one username is specified.
 		if len(words) != 2 {
 			reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 				Body: "Wrong parameter count."}
 			client.Send(reply)
 			break
 		}
+		// Unfollow the specified user.
 		out, err := twtxt.UserManagement(false, words[1:])
 		if err != nil {
 			reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
@@ -304,6 +337,7 @@ func processMessage(client *xmpp.Client, packet *xmpp.Message, config *configura
 		reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 			Body: *out}
 		client.Send(reply)
+	// Retrieve a list of users we are following.
 	case "to":
 		out, err := twtxt.ListFollowing()
 		if err != nil {
@@ -315,6 +349,7 @@ func processMessage(client *xmpp.Client, packet *xmpp.Message, config *configura
 		reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 			Body: *out}
 		client.Send(reply)
+	// Point help command if an unknown command is received.
 	default:
 		reply := xmpp.Message{PacketAttrs: xmpp.PacketAttrs{To: packet.From, Type: "chat"},
 			Body: "Unknown command. Send \"help\"."}
