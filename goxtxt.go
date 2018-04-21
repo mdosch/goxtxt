@@ -84,17 +84,17 @@ func main() {
 
 	var session *xmpp.Session
 
-	// Connect to xmpp server
+	// Connect to xmpp server.
 	if session, err = client.Connect(); err != nil {
 		log.Fatal("Error: ", err)
 	}
 
 	fmt.Println("Stream opened, we have streamID = ", session.StreamId)
 
-	// Starting goroutine to check in background if connection is still alive.
+	// Start goroutine to check in background if connection is still alive.
 	go checkConnection(client, &config.BotJid, &config.Address)
 
-	// Receiving xmpp packets in a for loop
+	// Receive xmpp packets in a for loop.
 	for packet := range client.Recv() {
 		switch packet := packet.(type) {
 		case xmpp.Message:
