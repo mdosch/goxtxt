@@ -21,7 +21,6 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
-	"strings"
 )
 
 var shell = initShell()
