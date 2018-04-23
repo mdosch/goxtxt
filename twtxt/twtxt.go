@@ -43,19 +43,20 @@ func initShell() string {
 // Gets the path to twtxt or txtnish binary. Txtnish is prefered.
 func initTwtxt() (string, bool) {
 	txtnishPresent := true
-	command := "whereis -b txtnish"
-	out, err := exec.Command(shell, "-c", command).Output()
+	output := "/usr/local/bin/txtnish"
+	command := "ls /usr/local/bin/txtnish"
+	cmd := execTwtxt(shell, "-c", command)
+	_, err := cmd.Output()
 	if err != nil {
-		command = "whereis -b twtxt"
-		out, err = exec.Command(shell, "-c", command).Output()
+		output = "/usr/local/bin/twtxt"
+		command = "ls /usr/local/bin/twtxt"
+		_, err = exec.Command(shell, "-c", command).Output()
 		if err != nil {
 			log.Fatal("Error: ", err)
 		}
 		txtnishPresent = false
 	}
-	output := strings.SplitAfter(string(out), " ")
-	output[1] = strings.TrimSuffix(output[1], "\n")
-	return output[1], txtnishPresent
+	return output, txtnishPresent
 }
 
 // Tweet sends a tweet.
