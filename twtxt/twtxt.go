@@ -45,8 +45,7 @@ func initTwtxt() (string, bool) {
 	txtnishPresent := true
 	output := "/usr/local/bin/txtnish"
 	command := "ls /usr/local/bin/txtnish"
-	cmd := execTwtxt(shell, "-c", command)
-	_, err := cmd.Output()
+		_, err := exec.Command(shell, "-c", command).Output()
 	if err != nil {
 		output = "/usr/local/bin/twtxt"
 		command = "ls /usr/local/bin/twtxt"
