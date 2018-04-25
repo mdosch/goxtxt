@@ -72,10 +72,23 @@ func Tweet(s []string) (*string, error) {
 // Timeline shows the requested amount of timeline entries.
 // It returns a pointer to the requested timeline entries and any
 // error encountered.
-func Timeline(i *int) (*string, error) {
-	command := twtxtpath + " timeline | head -n " + strconv.Itoa(*i*3)
-	out, err := exec.Command(shell, "-c", command).Output()
-	outputstring := string(out)
+func Timeline(entries *int) (*string, error) {
+	out, err := exec.Command(twtxtpath, "timeline").Output()
+	var outputstring string
+	var lines int
+
+	fullTimeline := string(out)
+	for _, character := range []rune(fullTimeline) {
+		outputstring += string(character)
+		if string(character) == "\n" {
+			lines++
+		}
+		if lines == *entries*3 {
+			break
+		}
+
+	}
+
 	return &outputstring, err
 }
 
