@@ -57,15 +57,14 @@ func initTwtxt() (string, bool) {
 // Tweet sends a tweet.
 // It returns a pointer to twtxt output and any error encountered.
 func Tweet(s []string) (*string, error) {
-	command := twtxtpath + " tweet \""
+	var command string
 	for i, tweet := range s {
 		command = command + tweet
 		if i < len(s)-1 {
 			command = command + " "
 		}
 	}
-	command = command + "\""
-	out, err := exec.Command(shell, "-c", command).Output()
+	out, err := exec.Command(twtxtpath, "tweet", command).Output()
 	outputstring := string(out)
 	return &outputstring, err
 }
@@ -101,22 +100,24 @@ func ViewUser(i *int, user *string) (*string, error) {
 // UserManagement follows or unfollows the specified user.
 // It returns a pointer to twtxt output and any error encountered.
 func UserManagement(follow bool, s []string) (*string, error) {
-	var command string
+	var out []byte
+	var err error
+
 	if follow == true {
-		command = twtxtpath + " follow -f " + s[0] + " " + s[1]
+		out, err = exec.Command(twtxtpath, "follow", s[0], s[1]).Output()
 	} else {
-		command = twtxtpath + " unfollow " + s[0]
+		out, err = exec.Command(twtxtpath, "unfollow", s[0]).Output()
 	}
-	out, err := exec.Command(shell, "-c", command).Output()
+
 	outputstring := string(out)
+	println(outputstring)
 	return &outputstring, err
 }
 
 // ListFollowing lists the users you are following.
 // It returns a pointer to twtxt output and any error encountered.
 func ListFollowing() (*string, error) {
-	command := twtxtpath + " following"
-	out, err := exec.Command(shell, "-c", command).Output()
+	out, err := exec.Command(twtxtpath, "following").Output()
 	outputstring := string(out)
 	return &outputstring, err
 }
