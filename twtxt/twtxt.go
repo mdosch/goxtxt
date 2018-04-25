@@ -86,9 +86,7 @@ func Timeline(entries *int) (*string, error) {
 		if lines == *entries*3 {
 			break
 		}
-
 	}
-
 	return &outputstring, err
 }
 
