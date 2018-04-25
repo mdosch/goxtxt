@@ -43,16 +43,13 @@ func initShell() string {
 func initTwtxt() (string, bool) {
 	txtnishPresent := true
 	output := "/usr/local/bin/txtnish"
-	command := "ls /usr/local/bin/txtnish"
-		_, err := exec.Command(shell, "-c", command).Output()
-	if err != nil {
-		output = "/usr/local/bin/twtxt"
-		command = "ls /usr/local/bin/twtxt"
-		_, err = exec.Command(shell, "-c", command).Output()
-		if err != nil {
+
+	if _, err := os.Stat("/usr/local/bin/txtnish"); os.IsNotExist(err) {
+		if _, err := os.Stat("/usr/local/bin/twtxt"); os.IsNotExist(err) {
 			log.Fatal("Error: ", err)
 		}
 		txtnishPresent = false
+		output = "/usr/local/bin/twtxt"
 	}
 	return output, txtnishPresent
 }
