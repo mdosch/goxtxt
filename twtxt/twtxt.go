@@ -121,7 +121,6 @@ func UserManagement(follow bool, s []string) (*string, error) {
 	}
 
 	outputstring := string(out)
-	println(outputstring)
 	return &outputstring, err
 }
 
